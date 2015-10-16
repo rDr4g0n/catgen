@@ -1,0 +1,43 @@
+.cat-card {
+    min-width: 200px;
+    max-width: 400px;
+    background-color: white;
+    margin: 10px;
+
+    color: #444;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.cat-card .portrait {
+    width: 100%;
+    height: 200px;
+    background-color: red;
+    margin-bottom: 10px;
+}
+
+.cat-card .greeting {
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.cat-card .name {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: 3em;
+    text-align: center;
+    margin: -20px auto;
+}
+
+.cat-card .share-link {
+    font-size: 1.2em;
+    width: calc(100% - 20px);
+    margin: 10px;
+    border: solid 1px transparent;
+    padding: 4px;
+    text-align: center;
+    color: #888;
+}
+.cat-card .share-link:focus {
+    border-color: #EEE;
+}
+
