@@ -16,8 +16,15 @@ h1, h2, h3, p {
     margin-bottom: 5px;
 }
 
+i {
+    font-style: normal;
+}
 
-
+.btn {
+    padding: 10px;
+    background-color: #EEE;
+    cursor: pointer;
+}
 
 
 body {
@@ -30,4 +37,8 @@ body {
 }
 ::selection {
     background: #EEE; /* WebKit/Blink Browsers */
+}
+
+*:focus {
+    outline: 0;
 }

@@ -16,8 +16,15 @@ h1, h2, h3, p {
     margin-bottom: 5px;
 }
 
+i {
+    font-style: normal;
+}
 
-
+.btn {
+    padding: 10px;
+    background-color: #EEE;
+    cursor: pointer;
+}
 
 
 body {
@@ -32,21 +39,24 @@ body {
     background: #EEE; /* WebKit/Blink Browsers */
 }
 
+*:focus {
+    outline: 0;
+}
+
 .cat-card {
     min-width: 200px;
     max-width: 400px;
     background-color: white;
-    margin: 10px;
+    margin: 20px;
 
-    color: #444;
+    color: cadetblue;
 
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .cat-card .portrait {
     width: 100%;
-    height: 200px;
-    background-color: red;
+    background-color: khaki;
     margin-bottom: 10px;
 }
 
@@ -59,19 +69,70 @@ body {
     font-family: 'Gloria Hallelujah', cursive;
     font-size: 3em;
     text-align: center;
-    margin: -20px auto;
+    margin: -20px auto -10px auto;
 }
 
+.cat-card .name-input {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: 3em;
+    text-align: center;
+    width: calc(100% - 40px);
+    border: none;
+    border-bottom: 2px dotted #EEE;
+    margin: 0 10px 10px 20px;
+    color: cadetblue;
+}
+.cat-card .name-input::-webkit-input-placeholder {
+   color: lightblue;
+}
+
+.cat-card .share {
+    position: relative;
+    border-top: dotted 2px #EEE;
+}
 .cat-card .share-link {
-    font-size: 1.2em;
     width: calc(100% - 20px);
     margin: 10px;
     border: solid 1px transparent;
-    padding: 4px;
+    padding: 6px 30px 6px 6px;
     text-align: center;
     color: #888;
 }
-.cat-card .share-link:focus {
-    border-color: #EEE;
+
+.cat-card .share-icon {
+    position: absolute;
+    top: 13px;
+    right: 15px;
+    font-size: 1.2em;
+}
+
+.cat-card .actions {
+    display: flex;
+    flex-direction: row;
+    padding: 0 20px 10px 20px;
+}
+
+.cat-card .actions .btn {
+    flex: 0 1 auto;
+    text-align: center;
+}
+
+.cat-card .actions .btn.yes {
+    flex-basis: 50%;
+    color: limegreen;
+    background-color: white;
+}
+.cat-card .actions .btn.yes:hover{
+    background-color: limegreen;
+    color: white;
+}
+.cat-card .actions .btn.no {
+    flex-basis: 50%;
+    color: lightcoral;
+    background-color: white;
+}
+.cat-card .actions .btn.no:hover{
+    background-color: lightcoral;
+    color: white;
 }
 
