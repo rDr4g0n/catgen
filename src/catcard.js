@@ -3,7 +3,14 @@
     "use strict";
 
     var template = Handlebars.compile(`
-        <canvas id="kitty" class="portrait" width="360" height="180"></canvas>
+        {{#if message}}
+        <div class="modal">
+            <div class="message">{{{message}}}</div> 
+            <div class="close">❌</div>
+        </div>
+        {{/if}}
+
+        <canvas class="portrait" width="360" height="180"></canvas>
 
         <div class="greeting">{{model.greeting}}</div>
 
@@ -11,14 +18,14 @@
         <input type="text" class="name-input" placeholder="meow!">
         <div class="actions">
             <div class="no btn">✖ No me gusta</div>
-            <div class="yes btn">✓ I like dis one</div>
+            <div class="yes btn">✓ I like this one</div>
         </div>
 
         {{else}}
         <div class="name">{{model.name}}</div>
         {{#if isAlive}}
         <div class="share">
-            <input class="share-link" value="catgen.com/?cat=JR12jDD8fsjdkfHAFjkdsf9808dfsdFJKAJ123f9jdikhja" readonly onclick="this.select();">
+            <input class="share-link" value="http://localhost:3006/api/cats/{{model.id}}" readonly onclick="this.select();">
             <i class="share-icon">★</i>
         </div>
         {{/if}}
@@ -31,6 +38,9 @@
 
 
     var sassycat = {
+        "nameme": [
+            "Hi! Will you name me?"
+        ],
         "missingName": [
             "I need a name buddy",
             "Cmon, gimme a name",
@@ -60,14 +70,14 @@
 
         constructor(cat){
             this.el = document.createElement("div");
-            this.el.className = "cat-card new";
+            this.el.className = "cat-card";
 
             if(cat){
                 this.model = cat;
                 this.status = ALIVE;
             } else {
                 this.model = {
-                    greeting: "Hi! Will you name me?" 
+                    greeting: getSassyText("nameme")
                 };
                 this.status = NEW;
             }
@@ -88,17 +98,24 @@
             // probably not the most sensible arrangement
             var listeners = {
                 ".btn.yes": this.save,
-                ".btn.no": this.murder
+                ".btn.no": this.murder,
+                ".modal .close": this.hideMessage
             };
 
-            this.el.addEventListener("click", e => {
+            var clickHandler = e => {
                 var target = e.target;
                 for(var listener in listeners){
                     if(target.matches(listener)){
                         listeners[listener].call(this, e);
                     }
                 }
-            });
+            };
+            this.el.addEventListener("click", clickHandler);
+
+            // TODO - probably not the nicests
+            this.removeEventListeners = () => {
+                this.el.removeEventListener("click", clickHandler);
+            };
         }
 
         render(){
@@ -119,15 +136,16 @@
             var name = this.el.querySelector(".name-input").value;
 
             if(!name){
-                this.model.greeting = getSassyText("missingName");
-                return;
+                // disable client side verification
+                //this.model.greeting = getSassyText("missingName");
+                //return;
             }
 
             this.status = ALIVE;
             this.model.name = name;
             this.model.greeting = getSassyText("alive");
 
-            this.emit("saved", this.model);
+            this.emit("saved", this);
         }
 
         murder(){
@@ -135,11 +153,31 @@
             this.model.name = ":(";
             this.model.greeting = getSassyText("dead");
 
-            this.emit("murdered", this.el);
+            this.emit("murdered", this);
         }
 
+        // clean up for GC
         destroy(){
-            // TODO - unbind listeners
+            this.removeEventListeners();
+            this.off();
+        }
+
+        // keep cat portrait, but mark as new
+        reset(){
+            this.status = NEW;
+            this.model.name = "";
+            this.model.greeting = getSassyText("nameme");
+        }
+
+        // shows a little modal message inside
+        // cat card
+        showMessage(message){
+            this.message = message;
+            this.render();
+        }
+        hideMessage(){
+            this.message = "";
+            this.render();
         }
     }
 

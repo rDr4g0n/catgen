@@ -3,6 +3,11 @@ var http = require("http"),
 	path = require("path"),
 	fs = require("fs");
 
+
+var catcards = {
+    cards: []
+};
+
 module.exports = function(dir, port){
     port = port || 3006;
     dir = dir ? path.join(process.cwd(), dir) : process.cwd();
@@ -10,6 +15,12 @@ module.exports = function(dir, port){
     http.createServer(function(req, res){
         var uri = url.parse(req.url).pathname,
             filename = path.join(dir, uri);
+
+        // roll your own RESTy api, wheee
+        if(uri.substr(0, 4) === "/api"){
+            handleAPIRequest(req, res);
+            return;
+        }
 
         path.exists(filename, function(exists){
             if(!exists){
@@ -65,4 +76,57 @@ function getContentType(fileName) {
     }
 
     return type;
+}
+
+function handleAPIRequest(req, res){
+
+    var method = req.method,
+        parsed = url.parse(req.url),
+        path = parsed.pathname.split("/").slice(2);
+
+    var body="";
+
+    console.log(method + "ing", path);
+
+    if(path[0] === "cats"){
+        if(method === "GET"){
+            res.setHeader("Content-Type", "application/json");
+            res.writeHead(200);
+            res.write(JSON.stringify(catcards));
+            res.end();
+        }
+        if(method === "POST"){
+            req.on("data", function(data){
+                body += data;
+            });
+            req.on("end", function(){
+                if(!body){
+                    res.writeHead(400, {"Content-Type": "text/plain"});
+                    res.write("Missing cat info");
+                    res.end();
+                    return;
+                }
+
+                var catcard = JSON.parse(body);
+
+                if(!catcard.name){
+                    res.writeHead(400, {"Content-Type": "text/plain"});
+                    res.write("Missing cat name. How can you have a cat without a name?");
+                    res.end();
+                    return;
+                }
+
+                catcard.id = "C"+Math.floor(Math.random()*1000000);
+                catcards.cards.push(catcard);
+                res.setHeader("Content-Type", "application/json");
+                res.writeHead(200);
+                res.write(JSON.stringify(catcard));
+                res.end();
+            });
+        }
+    } else {
+        res.writeHead(404, {"Content-Type": "text/plain"});
+        res.write("404 Not Found\nCould not find '"+ path[0] +"'");
+        res.end();
+    }
 }

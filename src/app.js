@@ -1,107 +1,91 @@
+/* jshint esnext: true */
 (function(){
+    // vanilla-ish xhr stuff
+    // TODO - move to a file or something
+    function GET(url){
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.send();
+        return waitForResponse(xhr);
+    }
+    function POST(url, data){
+        if(typeof data !== "string"){
+            data = JSON.stringify(data);
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url);
+        xhr.send(data);
+        return waitForResponse(xhr);
+    }
+    function waitForResponse(xhr){
+        var deferred = Q.defer();
+        xhr.onreadystatechange = function () {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                if (xhr.status === OK) {
+                    deferred.resolve(xhr.responseText);
+                } else {
+                    deferred.reject(xhr.status);
+                }
+            }
+        };
 
-    /*
-    var canvas = document.getElementById("kitty"),
-        context = canvas.getContext("2d"),
-        bounds = canvas.getBoundingClientRect(),
-        w = bounds.width,
-        h = bounds.height,
-        centerW = bounds.width / 2,
-        centerH = bounds.height / 2;
-
-    var palette = {
-        primary: "#171334",
-        bg: "#6382B8",
-        accent: "#F84F76"
-    };
-    */
-
-
-
-    window.drawAThing = function(){
-        // bg
-        context.fillStyle = palette.bg;
-        context.fillRect(0, 0, w, h);
-
-        // head
-        context.beginPath();
-        context.arc(centerW, centerH, Math.min(centerW, centerH) - 40, 0, 2 * Math.PI, false);
-        context.fillStyle = palette.primary;
-        context.fill();
-        context.closePath();
-
-        // ears
-        var x0 = centerW - 20,
-            y0 = centerH - 45;
-
-        context.beginPath();
-        context.moveTo(x0, y0);
-        context.lineTo(x0 - 50, y0 - 20);
-        context.lineTo(x0 - 30, y0 + 50);
-        context.fillStyle = palette.primary;
-        context.fill();
-        context.closePath();
-
-        x0 = centerW + 20;
-        y0 = centerH - 45;
-
-        context.beginPath();
-        context.moveTo(x0, y0);
-        context.lineTo(x0 + 50, y0 - 20);
-        context.lineTo(x0 + 30, y0 + 50);
-        context.fillStyle = palette.primary;
-        context.fill();
-        context.closePath();
-
-        // ojos
-        var eyeWidth = 40,
-            halfEyeWidth = eyeWidth / 2,
-            eyeHeight = 70,
-            halfEyeHeight = eyeHeight / 2,
-            eyeSpacing = 30,
-            eyeVerticalPosition = -20;
-
-        x0 = centerW - eyeSpacing;
-        y0 = centerH - eyeVerticalPosition;
-
-        context.beginPath();
-        context.moveTo(x0 - halfEyeWidth, y0);
-        context.bezierCurveTo(x0 - halfEyeWidth, y0, x0, y0 + halfEyeHeight, x0 + halfEyeWidth, y0);
-        context.bezierCurveTo(x0 + halfEyeWidth, y0, x0, y0 - halfEyeHeight, x0 - halfEyeWidth, y0);
-        context.fillStyle = palette.accent;
-        context.fill();
-        context.closePath();
-
-        x0 = centerW + eyeSpacing;
-        y0 = centerH - eyeVerticalPosition;
-
-        context.beginPath();
-        context.moveTo(x0 - halfEyeWidth, y0);
-        context.bezierCurveTo(x0 - halfEyeWidth, y0, x0, y0 + halfEyeHeight, x0 + halfEyeWidth, y0);
-        context.bezierCurveTo(x0 + halfEyeWidth, y0, x0, y0 - halfEyeHeight, x0 - halfEyeWidth, y0);
-        context.fillStyle = palette.accent;
-        context.fill();
-        context.closePath();
+        return deferred.promise;
+    }   
+    window.xhr = {
+        GET: GET,
+        POST: POST
     };
 
-    //drawAThing();
-    
 
-    // TODO - save and load catcards to ls
-    var catCard = new window.CatCard();
-    document.querySelector(".cards").appendChild(catCard.el);
 
-    catCard.on("murdered", function(){
-        // give enough time to see a 
-        // glimpse of the terror
-        setTimeout(function(){
-            catCard.el.remove();
-            catCard.destroy();
-
-            // TODO - add a new one
-        }, 500);
+    // TODO - use template to keep cat card list up to date
+    getCatCards().then(catcards => {
+        catcards.cards.forEach(model => {
+            createCatCard(model);
+        });
+        createCatCard(); 
     });
 
-    // TODO - on saved, add a new, empty catcard
+    function saveCatCard(catcard){
+        xhr.POST("/api/cats", catcard.model).then(res => {
+            // TODO - update view
+            createCatCard();
+        })
+        .catch(err => {
+            // changes didnt stick, so 
+            // reset the cat
+            catcard.reset();
+            catcard.showMessage("<div style='font-size: 3em;'>❇</div><b>Cat Error: error with cat.</b><br> What you do?");
+        });
+    }
+
+    function getCatCards(){
+        // TODO - handle failure
+        return xhr.GET("/api/cats").then(catcards => JSON.parse(catcards));
+    }
+
+    function createCatCard(model){
+        var catCard = new window.CatCard(model),
+            cardsEl = document.querySelector(".cards");
+
+        cardsEl.insertBefore(catCard.el, cardsEl.firstChild);
+
+        catCard.on("murdered", function(){
+            // give enough time to see a 
+            // glimpse of the terror
+            setTimeout(function(){
+                catCard.el.remove();
+                catCard.destroy();
+                createCatCard();
+            }, 500);
+        });
+
+        catCard.on("saved", saveCatCard);
+
+        return catCard;
+    }
+
 
 })();
