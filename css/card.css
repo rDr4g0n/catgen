@@ -4,10 +4,12 @@
     max-width: 400px;
     background-color: white;
     margin: 20px;
+    overflow: hidden;
 
     color: cadetblue;
 
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: height 0.5s;
 }
 
 .cat-card .modal {

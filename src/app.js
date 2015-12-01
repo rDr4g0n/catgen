@@ -38,12 +38,9 @@
         POST: POST
     };
 
-
-
-    // TODO - use template to keep cat card list up to date
     getCatCards().then(catcards => {
         catcards.cards.forEach(model => {
-            createCatCard(model);
+            createCatCard(model, true);
         });
         createCatCard(); 
     });
@@ -66,11 +63,19 @@
         return xhr.GET("/api/cats").then(catcards => JSON.parse(catcards));
     }
 
-    function createCatCard(model){
+    function createCatCard(model, skipAnimation){
         var catCard = new window.CatCard(model),
             cardsEl = document.querySelector(".cards");
 
         cardsEl.insertBefore(catCard.el, cardsEl.firstChild);
+
+        if(!skipAnimation){
+            // do a fancy slide in transition
+            catCard.el.style.height = 0;
+            setTimeout(function(){
+                catCard.el.style.height = "375px";
+            }, 0);
+        }
 
         catCard.on("murdered", function(){
             // give enough time to see a 
